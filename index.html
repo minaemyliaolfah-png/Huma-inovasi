@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta
+      name="description"
+      content="Portofolio inovasi pembelajaran Bahasa Indonesia Mina Emylia Olfah. Modul ajar, praktik pembelajaran, karya siswa, dan refleksi."
+    />
+    <title>Ruang Inovasi · Mina Emylia Olfah</title>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body>
+    <a class="skip btn" href="#main" id="skip">Lewati ke konten</a>
+    <div id="preview" class="preview-bar" hidden>
+      Pratinjau lokal · Deskripsi sudah tersedia. Hubungkan Apps Script untuk
+      menyimpan tautan bukti.
+    </div>
+    <header class="top">
+      <div class="wrap top-inner">
+        <a class="brand" href="#"
+          ><span class="mark">▤</span
+          ><span>Ruang Inovasi<small>MINA EMYLIA OLFAH</small></span></a
+        >
+        <nav class="nav" aria-label="Navigasi utama">
+          <a href="#" data-nav="home">Beranda</a
+          ><a href="#program" data-nav="program">Praktik baik</a
+          ><a href="#bukti" data-nav="bukti">Bukti implementasi</a
+          ><a href="#admin" class="btn secondary small" data-nav="admin"
+            >Admin</a
+          >
+        </nav>
+      </div>
+    </header>
+    <main id="main" class="wrap" tabindex="-1"></main>
+    <footer class="footer">
+      <div class="wrap">
+        <strong>Ruang Inovasi · Mina Emylia Olfah</strong
+        ><span>Belajar, berkarya, dan berbagi praktik baik.</span>
+      </div>
+    </footer>
+    <dialog id="confirm">
+      <h2>Hapus data?</h2>
+      <p id="confirm-text"></p>
+      <form method="dialog" class="actions">
+        <button class="btn secondary" value="cancel" autofocus>Batal</button
+        ><button class="btn danger" value="delete">Hapus</button>
+      </form>
+    </dialog>
+    <!-- Urutan berkas diperlukan oleh aplikasi. defer menunggu HTML siap. -->
+    <script src="config.js" defer></script>
+    <script src="assets/js/content.js" defer></script>
+    <script src="assets/js/api.js" defer></script>
+    <script src="assets/js/app.js" defer></script>
+
+  </body>
+</html>
