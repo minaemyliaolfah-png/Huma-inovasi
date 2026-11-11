@@ -27,6 +27,8 @@ const state = {
   filter: "",
   search: "",
   notice: "",
+  loading: false,
+  connectionError: "",
 };
 const $ = (id) => document.getElementById(id);
 const demo =
@@ -269,8 +271,7 @@ function innovationCollection() {
   update();
   return section;
 }
-function home() {
-  const { settings } = state.data;
+function homeIntro(settings) {
   const intro = el("section", "home-intro");
   intro.append(
     el("p", "eyebrow", "Portofolio praktik baik"),
@@ -287,7 +288,10 @@ function home() {
     intro.append(
       external("Buka portofolio PDF ↗", settings.portfolio, "btn secondary"),
     );
-  $("main").append(intro, innovationCollection());
+  return intro;
+}
+function home() {
+  $("main").append(homeIntro(state.data.settings), innovationCollection());
 }
 function programs() {
   $("main").append(innovationCollection());
@@ -1013,7 +1017,10 @@ function remove(type, item) {
 function render() {
   const main = $("main");
   main.replaceChildren();
-  if (!state.data) return;
+  if (!state.data) {
+    connectionState();
+    return;
+  }
   document.querySelector(".brand small").textContent = state.data.settings.name;
   document.querySelector(".footer strong").textContent =
     "Ruang Inovasi · " + state.data.settings.name;
@@ -1032,30 +1039,48 @@ function render() {
   else if (hash.startsWith("praktik/")) detail(hash.slice(8));
   else home();
 }
-async function load() {
+function connectionState() {
   const main = $("main");
-  main.replaceChildren(el("p", "page", "Memuat portofolio…"));
+  main.replaceChildren();
+  if (!location.hash || location.hash === "#")
+    main.append(homeIntro(SEED.settings));
+  if (state.loading) {
+    const status = el("p", "page", "Memuat daftar inovasi…");
+    status.setAttribute("role", "status");
+    main.append(status);
+    return;
+  }
+  const box = el("div", "panel");
+  box.style.marginTop = "30px";
+  box.append(
+    el("h2", "", "Data inovasi belum dapat dimuat"),
+    el("p", "", state.connectionError || "Periksa koneksi lalu coba lagi."),
+    button("Coba lagi", load),
+  );
+  main.append(box);
+}
+async function load() {
+  if (state.loading) return;
+  state.loading = true;
+  state.connectionError = "";
+  connectionState();
   try {
-    state.data = await api("get");
+    const data = await api("get");
     if (
-      !state.data.settings ||
-      !Array.isArray(state.data.programs) ||
-      !Array.isArray(state.data.evidence)
+      !data?.settings ||
+      !Array.isArray(data.programs) ||
+      !Array.isArray(data.evidence)
     )
       throw new Error(
         "Data portofolio belum lengkap. Jalankan setup Apps Script.",
       );
-    render();
+    state.data = data;
   } catch (error) {
     state.data = null;
-    const box = el("div", "panel");
-    box.style.marginTop = "30px";
-    box.append(
-      el("h1", "", "Portofolio belum terhubung"),
-      el("p", "", error.message),
-      button("Coba lagi", load),
-    );
-    main.replaceChildren(box);
+    state.connectionError = error.message;
+  } finally {
+    state.loading = false;
+    render();
   }
 }
 $("skip").onclick = (e) => {
