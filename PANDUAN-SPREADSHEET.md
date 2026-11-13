@@ -1,6 +1,6 @@
 # Mengelola isi dari Spreadsheet
 
-Data yang ditampilkan website berasal dari Spreadsheet. Anda dapat memakai Admin website atau mengubah sel langsung. Setelah menyimpan perubahan pada Sheets, muat ulang website untuk melihat hasil terbaru. Pengunjung yang sudah membuka halaman juga perlu memuat ulang.
+Data inovasi dan bukti berasal dari Spreadsheet. Teks header tersimpan dalam aplikasi pada `config.js`. Anda dapat memakai Admin website atau mengubah sel langsung. Setelah menyimpan perubahan pada Sheets, muat ulang website untuk melihat hasil terbaru. Pengunjung yang sudah membuka halaman juga perlu memuat ulang.
 
 ## Tab Program
 
@@ -43,13 +43,15 @@ Satu baris mewakili satu bukti. Satu inovasi dan satu bagian boleh mempunyai ban
 | ai          | Penjelasan penggunaan teknologi atau AI dan pemeriksaan hasil.         |
 | duration    | **Wajib untuk section video.** Durasi dalam detik, 1 sampai 300.       |
 | revision    | Kolom sistem.                                                          |
+| thumbnail   | Opsional. Tautan gambar publik Drive atau URL gambar HTTPS untuk kartu media. Kolom ini berada setelah revision. |
 
 Kode section yang digunakan website adalah sebagai berikut.
 
 | Kode     | Bagian halaman             |
 | -------- | -------------------------- |
 | modul    | Modul Ajar / RPP Inovatif  |
-| video    | Video Praktik Pembelajaran |
+| video    | Video Praktik Pembelajaran, di bagian atas |
+| media    | Media Pembelajaran: materi, game, aplikasi, website |
 | karya    | Hasil Karya Bersama Murid  |
 | refleksi | Refleksi & Evaluasi        |
 
@@ -57,14 +59,14 @@ Contoh pengisian bukti menggunakan programId `explore`, section `modul`, title `
 
 ## Tab Pengaturan
 
-Gunakan satu baris dengan id `main`.
+Gunakan satu baris dengan id `main`. Hanya tautan portfolio yang dipakai untuk tampilan baru. Kolom profil versi lama dipertahankan agar data lama tetap aman; header kini menggunakan `header` dalam `config.js`.
 
 | Kolom     | Isi                                                                                                           |
 | --------- | ------------------------------------------------------------------------------------------------------------- |
 | id        | `main`                                                                                                        |
-| name      | Nama peserta.                                                                                                 |
-| school    | Sekolah.                                                                                                      |
-| intro     | Pengantar singkat yang tampil di bagian atas beranda. Disarankan satu paragraf.                               |
+| name      | Kolom profil versi lama; tidak mengubah header.                                                                                                 |
+| school    | Kolom profil versi lama; tidak mengubah header.                                                                                                      |
+| intro     | Pengantar versi lama; tidak mengubah header.                               |
 | featured  | Kolom versi lama. Beranda terbaru menampilkan seluruh inovasi. Nilainya boleh dipertahankan atau dikosongkan. |
 | portfolio | Tautan HTTPS Portofolio PDF. Kosongkan jika belum tersedia.                                                   |
 | revision  | Kolom sistem.                                                                                                 |
@@ -93,3 +95,9 @@ Foto thumbnail diatur terpisah dari tautan video evidence. Untuk kartu inovasi, 
 Jika gambar tidak muncul, periksa izin file menggunakan jendela samaran dan coba muat ulang pratinjau. Drive dapat membatasi penyajian gambar atau akses file, sehingga kegagalan pemuatan ditangani dengan ilustrasi bawaan. Pengujian akses gambar Drive secara langsung belum dilakukan karena belum ada tautan gambar pengguna yang diberikan.
 
 [Petunjuk berbagi file dari Google](https://support.google.com/drive/answer/2494822)
+
+## Beberapa karya dan media dalam satu inovasi
+
+Tambahkan satu baris Evidence untuk setiap tautan. Gunakan programId yang sama dan section `karya` untuk beberapa karya siswa, atau section `media` untuk materi dan aplikasi pembelajaran. Masing-masing muncul sebagai kartu dengan judul, penjelasan, thumbnail, dan tautan. Thumbnail YouTube otomatis; file Drive mencoba thumbnail dari Drive. Website dan Canva dapat diberi thumbnail manual melalui kolom thumbnail. Video YouTube bisa diputar di halaman. Tautan website lain dibuka melalui tombol media.
+
+Bagian video berada di atas halaman inovasi. Tidak ada penghitung kelengkapan unggahan pada halaman publik. Bagian bukti kosong disembunyikan; refleksi tetap tampil bila deskripsi refleksi atau hasil program sudah terisi.

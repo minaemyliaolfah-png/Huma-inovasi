@@ -10,6 +10,7 @@ const SECTIONS = {
     "Video Praktik Pembelajaran",
     "Rekaman interaksi mengajar nyata, maksimal lima menit.",
   ],
+  media: ["Media Pembelajaran", "Materi, aplikasi, permainan, dan media pendukung pembelajaran."],
   karya: [
     "Hasil Karya Bersama Murid",
     "Produk siswa atau hasil evaluasi belajar beserta proses pembuatannya.",
@@ -200,29 +201,7 @@ function programCard(program, index) {
     el("span", "", "Lihat praktik baik"),
     el("span", "arrow", "↗"),
   );
-  const evidence = programEvidence(program.id);
-  const completed = Object.keys(SECTIONS).filter((key) =>
-    evidence.some((item) => item.section === key),
-  ).length;
-  const availability = el("div", "availability");
-  const dots = el("span", "evidence-dots");
-  dots.setAttribute("aria-hidden", "true");
-  Object.keys(SECTIONS).forEach((key) =>
-    dots.append(
-      el("span", evidence.some((item) => item.section === key) ? "filled" : ""),
-    ),
-  );
-  availability.append(
-    dots,
-    el(
-      "span",
-      "count",
-      completed
-        ? completed + " dari 4 bagian bukti tersedia"
-        : "Bukti sedang dilengkapi",
-    ),
-  );
-  body.append(availability, bottom);
+  body.append(bottom);
   card.append(cover(program, index), body);
   return card;
 }
@@ -271,11 +250,12 @@ function innovationCollection() {
   update();
   return section;
 }
-function homeIntro(settings) {
+function homeIntro() {
+  const settings = APP_CONFIG.header;
   const intro = el("section", "home-intro");
   intro.append(
     el("p", "eyebrow", "Portofolio praktik baik"),
-    el("h1", "", "Inovasi pembelajaran Bahasa Indonesia"),
+    el("h1", "", settings.title),
     el("p", "intro-text", settings.intro),
   );
   const identity = el("p", "intro-identity");
@@ -284,14 +264,14 @@ function homeIntro(settings) {
     el("span", "", settings.school),
   );
   intro.append(identity);
-  if (safeUrl(settings.portfolio))
+  if (safeUrl(state.data?.settings?.portfolio))
     intro.append(
-      external("Buka portofolio PDF ↗", settings.portfolio, "btn secondary"),
+      external("Buka portofolio PDF ↗", state.data.settings.portfolio, "btn secondary"),
     );
   return intro;
 }
 function home() {
-  $("main").append(homeIntro(state.data.settings), innovationCollection());
+  $("main").append(homeIntro(), innovationCollection());
 }
 function programs() {
   $("main").append(innovationCollection());
@@ -306,35 +286,47 @@ function embed(url, title, cls = "media") {
   frame.allowFullscreen = true;
   return frame;
 }
+function evidenceThumbnail(item) {
+  const custom = thumbnailUrl(item.thumbnail);
+  if (custom) return custom;
+  const video = ytId(item.url);
+  if (video) return "https://i.ytimg.com/vi/" + video + "/hqdefault.jpg";
+  const file = driveFile(item.url);
+  if (file) return driveUrl(file);
+  const url = safeUrl(item.url);
+  return url && /\.(png|jpe?g|webp|gif)(?:[?#]|$)/i.test(url) ? url : "";
+}
 function evidenceCard(item) {
   const box = el("article", "evidence-item");
   const video = ytId(item.url);
-  if (video) {
-    const poster = button(
-      "",
-      () =>
-        poster.replaceWith(
-          embed(
-            "https://www.youtube-nocookie.com/embed/" +
-              video +
-              "?autoplay=1&playsinline=1",
-            item.title,
-          ),
-        ),
-      "video-poster",
-    );
-    poster.setAttribute("aria-label", "Putar " + item.title);
+  const playable = video
+    ? "https://www.youtube-nocookie.com/embed/" + video + "?autoplay=1&playsinline=1"
+    : item.section === "video" ? previewUrl(item.url) : "";
+  const poster = playable
+    ? button("", () => poster.replaceWith(embed(playable, item.title)), "video-poster")
+    : external("", item.url, "media-thumbnail");
+  poster.setAttribute("aria-label", (playable ? "Putar " : "Buka ") + item.title);
+  poster.append(art());
+  const source = evidenceThumbnail(item);
+  if (source) {
     const image = el("img");
-    image.src = "https://i.ytimg.com/vi/" + video + "/hqdefault.jpg";
     image.alt = "";
     image.loading = "lazy";
-    image.onerror = () => image.remove();
-    poster.append(image, el("span", "play", "▶"));
-    box.append(poster);
+    image.referrerPolicy = "no-referrer";
+    // A custom thumbnail can fall back to YouTube before the illustration.
+    const automatic = video ? "https://i.ytimg.com/vi/" + video + "/hqdefault.jpg" : "";
+    image.onerror = () => {
+      if (automatic && image.src !== automatic) image.src = automatic;
+      else image.remove();
+    };
+    image.src = source;
+    poster.append(image);
   }
+  poster.append(el("span", playable ? "play" : "media-open", playable ? "▶" : "Buka media ↗"));
+  box.append(poster);
   const body = el("div", "body");
   body.append(
-    el("span", "pill", SECTIONS[item.section][0]),
+    el("span", "pill", (SECTIONS[item.section] || ["Media"])[0]),
     el("h3", "", item.title),
   );
   const meta = [
@@ -360,7 +352,7 @@ function evidenceCard(item) {
   if (preview && !video)
     actions.append(
       button(
-        "Pratinjau dokumen",
+        "Lihat pratinjau",
         (event) => {
           const frame = embed(preview, item.title, "media pdf");
           box.prepend(frame);
@@ -394,6 +386,20 @@ function detail(id) {
     el("p", "", p.summary),
   );
   page.append(head);
+  const evidence = programEvidence(id);
+  const videos = evidence.filter(item => item.section === "video");
+  if (videos.length) {
+    const lead = el("section", "lead-video evidence-section");
+    lead.id = "video";
+    lead.append(el("h2", "", SECTIONS.video[0]));
+    const list = el("div", "evidence-grid");
+    videos.forEach(item => list.append(evidenceCard(item)));
+    lead.append(list);
+    page.append(lead);
+  }
+  const visibleSections = ["modul", "media", "karya", "refleksi"].filter(key =>
+    evidence.some(item => item.section === key) || (key === "refleksi" && (p.results || p.reflection))
+  );
   const layout = el("div", "detail-layout");
   const nav = el("nav", "side");
   nav.setAttribute("aria-label", "Bagian praktik baik");
@@ -406,8 +412,9 @@ function detail(id) {
     };
     nav.append(a);
   };
+  if (videos.length) jump(SECTIONS.video[0], "video");
   jump("Tentang program", "overview");
-  Object.entries(SECTIONS).forEach(([key, [title]]) => jump(title, key));
+  visibleSections.forEach(key => jump(SECTIONS[key][0], key));
   const content = el("div");
   const overview = el("section", "panel");
   overview.id = "overview";
@@ -423,11 +430,11 @@ function detail(id) {
   ])
     if (p[key]) overview.append(el("h3", "", title), el("p", "prose", p[key]));
   content.append(overview);
-  Object.entries(SECTIONS).forEach(([key, [title, desc]], i) => {
+  visibleSections.forEach(key => {
+    const [title, desc] = SECTIONS[key];
     const section = el("section", "evidence-section");
     section.id = key;
     section.append(
-      el("p", "eyebrow", "BAGIAN 0" + (i + 1)),
       el("h2", "", title),
       el("p", "", desc),
     );
@@ -448,13 +455,6 @@ function detail(id) {
     const items = programEvidence(id).filter((e) => e.section === key);
     const list = el("div", "evidence-grid");
     if (items.length) items.forEach((e) => list.append(evidenceCard(e)));
-    else
-      list.append(
-        empty(
-          "Tautan bukti belum ditambahkan",
-          "Berkas pendukung untuk bagian ini akan ditampilkan setelah tersedia.",
-        ),
-      );
     section.append(list);
     content.append(section);
   });
@@ -494,15 +494,13 @@ function gallery() {
         (!select.value || e.programId === select.value) &&
         (e.title + " " + e.description).toLocaleLowerCase("id").includes(term),
     );
-    results.textContent = items.length + " bukti ditemukan";
+    results.textContent = items.length ? items.length + " media" : "";
     list.replaceChildren();
     if (!items.length)
       list.append(
         empty(
-          "Belum ada bukti yang ditampilkan",
-          state.data.evidence.length
-            ? "Coba kata kunci atau program lain."
-            : "Tautan dokumen, video, karya, dan evaluasi dapat ditambahkan melalui admin.",
+          "Koleksi media",
+          "Jelajahi praktik baik melalui menu Inovasi atau coba kata kunci lain.",
         ),
       );
     items.forEach((item) => {
@@ -625,7 +623,7 @@ function admin() {
   for (const [key, title] of [
     ["bukti", "Bukti implementasi"],
     ["program", "Inovasi"],
-    ["settings", "Beranda & profil"],
+    ["settings", "Portofolio PDF"],
   ]) {
     const b = button(
       title,
@@ -736,7 +734,7 @@ function editForm(page) {
       "h2",
       "",
       type === "settings"
-        ? "Beranda & profil"
+        ? "Portofolio PDF"
         : type === "program"
           ? "Deskripsi inovasi"
           : "Lembar pengantar bukti",
@@ -817,9 +815,7 @@ function editForm(page) {
     ])
       area(key, label);
   } else if (type === "settings") {
-    text("name", "Nama peserta", true);
-    text("school", "Sekolah", true);
-    area("intro", "Pengantar singkat beranda", true);
+    grid.append(el("p", "help span", "Nama, sekolah, dan pengantar header diatur dalam config.js pada aplikasi."));
     field(grid, "portfolio", "Tautan Portofolio PDF", "url", data.portfolio, {
       help: "File PDF yang dapat dibuka penilai.",
     });
@@ -864,6 +860,25 @@ function editForm(page) {
       wide: true,
       help: "YouTube, Google Drive, Canva, Assemblr, atau aplikasi. Pastikan akses penilai sudah dibuka.",
     });
+    const thumbnail = field(grid, "thumbnail", "Thumbnail media (opsional)", "url", data.thumbnail, {
+      wide: true,
+      help: "YouTube dan file Drive memakai thumbnail otomatis. Untuk poster, Canva, atau website, tempel tautan gambar publik dari Drive atau URL gambar HTTPS. Satu bukti untuk setiap karya; tambahkan lagi untuk karya berikutnya.",
+    });
+    const mediaPreview = el("div", "span thumbnail-preview");
+    grid.append(mediaPreview);
+    const mediaUrl = grid.querySelector("[name=url]");
+    let mediaTimer;
+    function updateMediaPreview() {
+      thumbnail.setCustomValidity(thumbnail.value.trim() && !thumbnailUrl(thumbnail.value.trim()) ? "Gunakan tautan file gambar, bukan folder Drive." : "");
+      const item = {url: mediaUrl.value.trim(), thumbnail: thumbnail.value.trim()};
+      mediaPreview.replaceChildren(cover({cover: evidenceThumbnail(item)}));
+    }
+    [thumbnail, mediaUrl].forEach(input => input.addEventListener("input", () => {
+      thumbnail.setCustomValidity(thumbnail.value.trim() && !thumbnailUrl(thumbnail.value.trim()) ? "Gunakan tautan file gambar, bukan folder Drive." : "");
+      clearTimeout(mediaTimer);
+      mediaTimer = setTimeout(updateMediaPreview, 400);
+    }));
+    updateMediaPreview();
     field(
       grid,
       "original",
@@ -908,6 +923,7 @@ function editForm(page) {
           ". " +
           program.objective +
           " File atau tautan terlampir menjadi sumber untuk meninjau produk yang dihasilkan.",
+        media: "Media ini digunakan dalam program " + program.short + ". Jelaskan isi media dan cara penggunaannya dalam pembelajaran.",
         refleksi: program.results + "\n\n" + program.reflection,
       };
       const proposedTitle = SECTIONS[kind][0] + " — " + program.short;
@@ -960,7 +976,7 @@ function editForm(page) {
     event.preventDefault();
     if (state.busy) return;
     const values = {
-      ...(type === "settings" ? { featured: data.featured || "" } : {}),
+      ...(type === "settings" ? { name: data.name || APP_CONFIG.header.name, school: data.school || APP_CONFIG.header.school, intro: data.intro || APP_CONFIG.header.intro, featured: data.featured || "" } : {}),
       id: data.id,
       ...Object.fromEntries(new FormData(form)),
     };
@@ -1021,10 +1037,10 @@ function render() {
     connectionState();
     return;
   }
-  document.querySelector(".brand small").textContent = state.data.settings.name;
+  document.querySelector(".brand small").textContent = APP_CONFIG.header.name;
   document.querySelector(".footer strong").textContent =
-    "Ruang Inovasi · " + state.data.settings.name;
-  document.title = "Ruang Inovasi · " + state.data.settings.name;
+    "Ruang Inovasi · " + APP_CONFIG.header.name;
+  document.title = "Ruang Inovasi · " + APP_CONFIG.header.name;
   const hash = location.hash.slice(1);
   for (const nav of document.querySelectorAll("[data-nav]")) {
     const active =
@@ -1043,7 +1059,7 @@ function connectionState() {
   const main = $("main");
   main.replaceChildren();
   if (!location.hash || location.hash === "#")
-    main.append(homeIntro(SEED.settings));
+    main.append(homeIntro());
   if (state.loading) {
     const status = el("p", "page", "Memuat daftar inovasi…");
     status.setAttribute("role", "status");

@@ -13,15 +13,7 @@ Jika akses Anyone dibatasi akun sekolah, diperlukan akun atau pengaturan organis
 
 ## 2 Isi konfigurasi website
 
-Buka `config.js` dan isi `apiUrl`.
-
-```js
-const APP_CONFIG = {
-  apiUrl: "https://script.google.com/macros/s/ID_DEPLOYMENT_ANDA/exec",
-};
-```
-
-Simpan file. Kata sandi admin disimpan melalui Script Properties pada backend.
+Buka `config.js` dan ubah nilai `apiUrl` bila alamat deployment berubah. Pertahankan objek `header` yang sudah tersedia. Nama, sekolah, judul, dan pengantar beranda diubah di objek tersebut. Kata sandi admin tetap disimpan melalui Script Properties pada backend.
 
 ## 3 Unggah ke GitHub Pages
 
@@ -34,18 +26,19 @@ Pertahankan nama file, susunan folder, dan huruf kecil pada `index.html`. File `
 
 ## 4 Tambahkan tautan bukti
 
-Masuk melalui Admin menggunakan kata sandi yang Anda atur. Pada **Beranda & profil**, ubah pengantar singkat, nama, sekolah, dan tautan Portofolio PDF. Beranda menampilkan seluruh daftar inovasi secara setara.
+Masuk melalui Admin menggunakan kata sandi yang Anda atur. Pada **Portofolio PDF**, masukkan tautan dokumen portofolio. Teks header diatur dalam `config.js`. Beranda menampilkan seluruh daftar inovasi secara setara.
 
-Pada **Program**, Anda dapat mengedit deskripsi dan foto sampul. Pada **Bukti implementasi**, pilih **Tambah bukti**, pilih program dan bagian bukti, lalu tempel tautan. Judul dan penjelasan awal akan terisi otomatis. Cocokkan dengan berkas yang dilampirkan sebelum menyimpan.
+Pada **Inovasi**, Anda dapat mengedit deskripsi dan foto sampul. Pada **Bukti implementasi**, pilih **Tambah bukti**, pilih program dan bagian bukti, lalu tempel tautan. Judul dan penjelasan awal akan terisi otomatis. Cocokkan dengan berkas yang dilampirkan sebelum menyimpan.
 
-Setiap program mempunyai empat bagian berikut.
+Bagian yang dapat diisi untuk setiap program:
 
 - Modul Ajar / RPP Inovatif
-- Video Praktik Pembelajaran
+- Video Praktik Pembelajaran (tampil di atas)
+- Media Pembelajaran (materi, aplikasi, permainan, dan tautan pendukung)
 - Hasil Karya Bersama Murid
 - Refleksi & Evaluasi
 
-Setiap bagian dapat memuat beberapa tautan. YouTube menampilkan thumbnail dan pemutar di halaman. Tautan Google Drive dengan pola `/file/d/ID/view` serta PDF langsung menyediakan tombol pratinjau. Izin berbagi pada sumber bukti menentukan apakah penilai dapat mengaksesnya.
+Setiap bagian dapat memuat beberapa tautan. Bagian kosong tidak ditampilkan kepada pengunjung. Isikan satu bukti untuk setiap karya atau media. Kolom Thumbnail media opsional menerima tautan gambar publik dari Drive atau URL gambar HTTPS. YouTube menampilkan thumbnail dan pemutar di halaman. Tautan Google Drive dengan pola `/file/d/ID/view` serta PDF langsung menyediakan tombol pratinjau. Izin berbagi pada sumber bukti menentukan apakah penilai dapat mengaksesnya.
 
 Durasi video praktik diisi dalam detik, maksimal 300. Pemeriksaan angka pada form perlu disertai pengecekan durasi rekaman sebenarnya oleh pemilik.
 
@@ -55,7 +48,7 @@ Saat `apiUrl` kosong, buka `index.html` dari File Explorer. Semua file pendukung
 
 ## Melakukan perubahan berikutnya
 
-- Deskripsi, tautan bukti, dan pengantar beranda dapat diubah dari Admin dan langsung tersimpan ke Sheets.
+- Deskripsi, tautan bukti, thumbnail media, dan tautan portofolio dapat diubah dari Admin dan langsung tersimpan ke Sheets. Header diubah dalam `config.js`, lalu unggah ulang file itu ke GitHub.
 - Tampilan diubah di `assets/css/styles.css`. Susunan halaman dan formulir berada di `assets/js/app.js`.
 - Unggah kembali file yang Anda ubah ke GitHub. GitHub Pages memublikasikan pembaruannya.
 - Perubahan Code.gs diterapkan melalui **Deploy → Manage deployments → Edit → New version → Deploy**. Perbarui deployment yang sama agar URL tetap.
@@ -65,7 +58,7 @@ Saat `apiUrl` kosong, buka `index.html` dari File Explorer. Semua file pendukung
 
 Deskripsi awal berasal dari bahan yang Anda kirim. Refleksi perlu dicocokkan dengan pengalaman sebenarnya. Data penelitian PELITA mengacu pada artikel tahun 2024. EXPLORE mengikuti naskah video Anda. Tautan bukti dan portofolio PDF masih perlu diisi.
 
-Sintaks, referensi aset, konsistensi data awal, dan logika backend telah diperiksa. Pemeriksaan visual browser dan sambungan ke deployment Apps Script belum dilakukan karena browser lokal dinonaktifkan serta URL deployment belum tersedia. Setelah pemasangan, buka situs dan seluruh tautan bukti pada jendela samaran untuk memeriksa akses penilai.
+Sintaks, referensi aset, konsistensi data awal, dan logika backend telah diperiksa. Pembaruan media sudah diperiksa melalui pengujian fungsi halaman dan simulasi migrasi Spreadsheet. Pemeriksaan visual browser dan pemasangan pembaruan pada layanan Google yang aktif belum dilakukan. Setelah pemasangan, buka situs dan seluruh tautan bukti pada jendela samaran untuk memeriksa akses penilai.
 
 ## Dokumentasi layanan
 
@@ -78,7 +71,7 @@ Anda dapat mengubah data yang sama melalui tab Program, Evidence, dan Pengaturan
 
 ## Memperbarui dari versi sebelumnya
 
-Ganti file frontend di repository GitHub dan Code.gs pada proyek Apps Script yang sama. Perbarui deployment Apps Script melalui Manage deployments → Edit → New version → Deploy. Pertahankan URL backend di config.js. Struktur kolom Spreadsheet tetap sama sehingga data yang sudah ada dapat dipakai. Setelah pembaruan, muat ulang website sebelum memakai admin.
+Ganti file frontend di repository GitHub dan Code.gs pada proyek Apps Script yang sama. Perbarui deployment Apps Script melalui Manage deployments → Edit → New version → Deploy. Pertahankan URL backend di config.js. Jalankan setup setelah mengganti Code.gs. Kolom thumbnail ditambahkan otomatis di ujung tab Evidence tanpa mengubah kolom atau data lama. Lihat PEMBARUAN-MEDIA.md. Setelah pembaruan, muat ulang website sebelum memakai admin.
 
 ## Foto thumbnail inovasi
 
